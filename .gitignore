@@ -45,3 +45,10 @@ Temporary Items
 
 # output directory
 /output/*
+
+*.pdf
+*.html
+*.Rproj
+*.Rhistory
+*.m
+*.class
