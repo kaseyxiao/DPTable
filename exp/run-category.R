@@ -34,30 +34,31 @@ main <- function(args) {
   out.dir <- paste('./output/', data.name
                    , "_CV_", as.character(CV.thresh), "_"
                    ,format(Sys.time(), "%Y%m%d_%H%M%S"), "/"
-                   , sep=""
+                   , sep = ""
   ) 
 
   dir.create(out.dir)
   errors <- ErrorStats(data.name, epsilon.1, epsilon.2, out.dir)
   
   for (i in 1:nrun) {
-    tag.run <- paste("-run-",i, sep="")
-    tag.out <- paste(tag.sample, tag.run, sep="")
-    sample.filename <- paste(out.dir, data.name, '-eps1-', tag.out, '.dat', sep="")
+    tag.run <- paste("-run-",i, sep = "")
+    tag.out <- paste(tag.sample, tag.run, sep = "")
+    sample.filename <- paste(out.dir, data.name
+                             , '-eps1-', tag.out, '.dat', sep = "")
     if (!file.exists(sample.filename)|| flag.sample) {
       beta <- compute_best_sampling_rate_with_Gtest(data.name, curr.data$DB.size
                                                     , epsilon.1
                                                     , curr.data$domain)
-      data.file <- curr.data$sample_data(out.dir, rate=beta
-                                         , out.tag=paste('-eps1-', tag.out, sep="")
+      data.file <- curr.data$sample_data(out.dir, rate = beta
+                                         , out.tag = paste('-eps1-', tag.out, sep = "")
       )  
-    }else{
-      data.file <- paste(data.name, '-eps1-', tag.out, sep="")
+    } else {
+      data.file <- paste(data.name, '-eps1-', tag.out, sep = "")
     }
     
     
-    sample.data <- curr.data$load_sample_data(out.dir, filename=data.file)
-    sample.info <- curr.data$load_sample_info(out.dir, filename=data.file)
+    sample.data <- curr.data$load_sample_data(out.dir, filename = data.file)
+    sample.info <- curr.data$load_sample_info(out.dir, filename = data.file)
     beta <- as.numeric(sample.info$sample.rate)
     sample.depgraph <- DependenceGraph$new(sample.data
                                            , flag.sample = TRUE
