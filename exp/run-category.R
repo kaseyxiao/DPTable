@@ -122,19 +122,6 @@ main <- function(args) {
       
     }
     print("finish")
-    
-    #     svm.miss.rates <- jtrees[['CV2.noisy']]$svm_miss_rate(curr.data$origin
-    #                                          , test.attrs = c("A10", "A4", "A15", "A6")
-    #                                          , test.attrs = c("A4")
-    #                                          , flag.consistent = TRUE
-    #                                          , flag.debug = TRUE)
-    #     
-    
-    
-    
-    #     output_svm()
-    #     output_kway.margin()
-    #     output_random_query()
   }
   if (flag.process.query) {
     jtree.file <- paste(data.name, '-eps1-', tag.sample, sep="")
