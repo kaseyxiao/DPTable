@@ -14,7 +14,7 @@ ConsistentMargin <- setRefClass (
                           , clique.noisy.freq, flag.debug = FALSE) {
       .self$N <- N
       .self$cliques <- cliques
-      names(.self$cliques) <- paste('C', seq(length(.self$cliques)), sep="")
+      names(.self$cliques) <- paste('C', seq(length(.self$cliques)), sep = "")
       .self$domain <- domain
       .self$all.attrs <- domain$name
       .self$clique.noisy.freq <- clique.noisy.freq
@@ -90,12 +90,12 @@ ConsistentMargin <- setRefClass (
             freq.noisy <- .self$clique.noisy.freq[[cname]]
             margin.xxx <- compose_noisy_clique_margin_data_table(cname, freq.noisy)
             #plyr::join(x,y,by=) keep the order of x, and avg don't use merge, it does not keep the order    
-            xxx <- plyr::join(margin.xxx,avg, by=attr.intersect)
+            xxx <- plyr::join(margin.xxx,avg, by = attr.intersect)
             #merge each single obs
             curr.obs <- single.obs[[cname]]
             setnames(curr.obs, 'Freq', 'single.obs')  #rename
-            xxx <- plyr::join(xxx, curr.obs, by=attr.intersect)
-            consist.freq <- xxx$freq.noisy+(xxx$avg-xxx$single.obs)/weight
+            xxx <- plyr::join(xxx, curr.obs, by = attr.intersect)
+            consist.freq <- xxx$freq.noisy+(xxx$avg-xxx$single.obs) / weight
             .self$clique.noisy.freq[[cname]] <- consist.freq   
           }  
         }
@@ -211,18 +211,19 @@ ConsistentMargin <- setRefClass (
     },
     
     get_dsize = function(attr.name){
-      return(.self$domain$dsize[which(.self$domain$name==attr.name)])
+      return(.self$domain$dsize[which(.self$domain$name == attr.name)])
     },
     
     inverse_var_weighting = function(single.obs, weights){
-      numerators<-sapply(names(single.obs), function(x) {single.obs[[x]]$Freq/weights[[x]]} )
-      denominator<-sum(unlist(sapply(weights, function(x) {1/x})))
-      avg<-rowSums(numerators)/denominator
-      ans<-single.obs[[1]]
-      ans$Freq<-NULL
-      ans[,"avg"]<-avg
+      numerators <- sapply(names(single.obs), function(x) {single.obs[[x]]$Freq / weights[[x]]} )
+      denominator <- sum(unlist(sapply(weights, function(x) {1 / x})))
+      avg <- rowSums(numerators) / denominator
+      ans <- single.obs[[1]]
+      ans$Freq <- NULL
+      ans[, "avg"] <- avg
       return(ans)
     },
+
     enforce_global_consistency = function(){
       nattempt <- 1
       ii = 1
