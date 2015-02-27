@@ -14,5 +14,5 @@ In Rstudio, run
 * -e1: epsilon value for constructing noisy junction tree
 * -e2: epsilon value for injecting noise into the marginal tables
 * -nrun: num of runs, 10 as default
-* -CV: numeric value in (0, 1),  threshold value for picking correlated attributes pairs, 0.2 as default,typically choose 0.2 for weakly correlated datasets; 0.3 for highly correlated datasets
+* -CV: numeric value in (0, 1),  threshold  Cramer’s V value for picking correlated attributes pairs, 0.2 as default,typically choose 0.2 for weakly correlated datasets; 0.3 for highly correlated datasets
 * -q: boolean value indicates whether to process query on the releasing tables, True as default
