@@ -18,25 +18,25 @@ main <- function(args) {
   flag.sample <- exp.specs$flag.sample
   data.name <- exp.specs$data.name
   print(exp.specs)
-  cutoff.p <- 1*1e-6
   epsilon.1 <- exp.specs$epsilon.1
   epsilon.2 <- exp.specs$epsilon.2
   CV.thresh <- exp.specs$CV
   nrun<-exp.specs$nrun
   flag.process.query <- exp.specs$flag.process.query
-  random_kways = c(4, 6)
-  all_kways = c(2, 3)
+#   random_kways = c(4, 6)
+#   all_kways = c(2, 3)
+  random_kways = c(2)
+  all_kways = c(2)
   
   cat("load data: ", data.name, "\n")
   curr.data <- Data$new(data.name)
-  #   tag.sample <- paste(unlist(strsplit(as.character(epsilon.1), split="\\."))
-  #                       , sep="", collapse="")
   tag.sample <- as.character(epsilon.1)
   out.dir <- paste('./output/', data.name
                    , "_CV_", as.character(CV.thresh), "_"
                    ,format(Sys.time(), "%Y%m%d_%H%M%S"), "/"
                    , sep=""
   ) 
+
   dir.create(out.dir)
   errors <- ErrorStats(data.name, epsilon.1, epsilon.2, out.dir)
   
@@ -65,7 +65,6 @@ main <- function(args) {
                                            , beta = beta
                                            , epsilon = epsilon.1
                                            , thresh.CV = CV.thresh
-                                           , thresh.pvalue = 1e-6
                                            , flag.debug = FALSE
     )
     
@@ -82,7 +81,7 @@ main <- function(args) {
     plot(jtrees[['CV2.noisy']]$jtree)
     curr.jtree <- jtrees[['CV2.noisy']]
     type <- "CV2.noisy" 
-    
+    # if using exiting junction tree structure
     #     curr.jtree <- JunctionTree$new(flag.build = FALSE
     #                                    , jtree.file = paste("output/",data.file, "-", type, "-jtree.Rdata",sep=""))
     curr.jtree$do_inference_with_merge(
@@ -109,12 +108,6 @@ main <- function(args) {
                                                        , num.of.query = 200)
         errors$add_error_stats_record('random', data.file, prob.dist, random_kways[i])
         errors$write_out_errors('random', data.file, random_kways[i])
-        #     write_out_L2error_random_query(data.name
-        #                                    , data.file
-        #                                    , prob.dist
-        #                                    , epsilon.1
-        #                                    , epsilon.2
-        #                                    , k = random_kways[i])    
       }
       for(i in seq_along(all_kways)){
         prob.dist <- curr.jtree$distance_kway_marginal(attrs = curr.data$domain$name
@@ -124,10 +117,7 @@ main <- function(args) {
                                                        , flag.random = FALSE
         )
         errors$add_error_stats_record('all', data.file, prob.dist, all_kways[i])
-        errors$write_out_errors('all', data.file, all_kways[i])
-        #     write_out_L2error_kway(data.name, data.file, prob.dist
-        #                            , epsilon.1, epsilon.2, k=all_kways[i])
-        
+        errors$write_out_errors('all', data.file, all_kways[i])        
       }
       
     }

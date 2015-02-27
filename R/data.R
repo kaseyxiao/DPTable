@@ -16,16 +16,16 @@ Data <- setRefClass(
       .load_coarse_data()
     }, 
     
-    sample_data = function(out.dir, rate, out.tag=''){
-      data.sample <- .self$origin[sample(.self$DB.size, round(.self$DB.size*rate)), ]
+    sample_data = function(out.dir, rate, out.tag = '') {
+      data.sample <- .self$origin[sample(.self$DB.size, round(.self$DB.size * rate)), ]
       print(nrow(data.sample))
       out.path <- file.path(out.dir, .self$name)
-      out.name = paste(out.path, as.character(out.tag), sep="")
+      out.name = paste(out.path, as.character(out.tag), sep = "")
       write.table(data.sample
-                  , file=paste(out.name, '.dat', sep="")
-                  , row.names=FALSE
-                  , col.names=FALSE
-                  , sep=","
+                  , file = paste(out.name, '.dat', sep="")
+                  , row.names = FALSE
+                  , col.names = FALSE
+                  , sep = ","
       )
       out.info = list(data.name = .self$name
                       , data.size = .self$DB.size
@@ -35,10 +35,10 @@ Data <- setRefClass(
       )
       out.info.table = do.call(rbind.data.frame, out.info)
       write.table(out.info.table
-                  , file=paste(out.name, '.info', sep="")
-                  , col.names=FALSE
+                  , file = paste(out.name, '.info', sep = "")
+                  , col.names = FALSE
       )
-      return(paste(.self$name, as.character(out.tag), sep=""))
+      return(paste(.self$name, as.character(out.tag), sep = ""))
       
     },
     
@@ -49,13 +49,12 @@ Data <- setRefClass(
       file.conn <- file(paste(path, '-coarse.domain', sep = ''))
       domain.info <- readLines(file.conn)
       close(file.conn)
-      domain.info<-lapply(domain.info, function(x) unlist(strsplit(x, split=" ")))
-#       .self$DB.size = as.integer(domain.info[[1]][2])
-      domain.info[1]<-NULL
+      domain.info <- lapply(domain.info, function(x) unlist(strsplit(x, split = " ")))
+      domain.info[1] <- NULL
       
-      .self$domain$name<-sapply(domain.info, function(x) paste('A',x[1], sep=""))
-      .self$domain$category<-sapply(domain.info, function(x) x[2])
-      .self$domain$dsize<-sapply(domain.info, function(x) as.integer(x[3]))
+      .self$domain$name <- sapply(domain.info, function(x) paste('A',x[1], sep = ""))
+      .self$domain$category <- sapply(domain.info, function(x) x[2])
+      .self$domain$dsize <- sapply(domain.info, function(x) as.integer(x[3]))
       
       process_levels <- function (x) {
         category <- x[2]
@@ -75,12 +74,12 @@ Data <- setRefClass(
     
     load_sample_info = function(out.dir, dataname, filename){
       path <- file.path(out.dir,filename)
-      sample.info<-list()
-      info.table<-read.table(file=paste(path, '.info', sep=''))
+      sample.info <- list()
+      info.table <- read.table(file = paste(path, '.info', sep = ''))
       for (i in seq_len(nrow(info.table))) {
-        key = as.character(info.table[i,1])
-        value = as.character(info.table[i,2])
-        sample.info[[key]]=value
+        key <- as.character(info.table[i, 1])
+        value <- as.character(info.table[i, 2])
+        sample.info[[key]] <- value
       }
       return(sample.info)
     },
@@ -94,11 +93,12 @@ Data <- setRefClass(
                        , check.names = FALSE
                        , colClasses = rep('factor', length(.self$domain$name))
       )
-      rows<-as.data.frame(rows)
+      rows <- as.data.frame(rows)
       for(col.name in colnames(rows)){
-        rows[col.name]<-lapply(rows[col.name]
+        rows[col.name] <- lapply(rows[col.name]
                                , factor
-                               , levels = .self$domain$levels[[which(.self$domain$name == col.name)]])
+                               , levels = .self$domain$levels[[
+                                 which(.self$domain$name == col.name)]])
       }
       data$rows <- rows
       data$domain <- domain
@@ -116,20 +116,15 @@ Data <- setRefClass(
       )
       rows <- as.data.frame(rows)
       
-      for(col.name in colnames(rows)){
+      for (col.name in colnames(rows)) {
         rows[col.name]<-lapply(rows[col.name], factor
-                               , levels = .self$domain$levels[[which(.self$domain$name == col.name)]])
+                               , levels = .self$domain$levels[[
+                                 which(.self$domain$name == col.name)]])
       }
       .self$origin <- rows
       .self$DB.size = as.integer(nrow(rows))
       print(paste("Dataset size:", .self$DB.size))
        
     }
-    
-
-    
-    
-    
-    
     )
 )

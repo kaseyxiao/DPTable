@@ -25,7 +25,8 @@ DependenceGraph <- setRefClass(
       .self$N <- nrow(data$rows)
       .self$thresh$CV <- thresh.CV
       .self$thresh$pvalue <- thresh.pvalue
-      .self$edges = list('CV' = list(), 'chi2' = list(), 'CV2.noisy' = list(), 'Gtest.noisy' = list())
+      .self$edges = list('CV' = list(), 'chi2' = list(), 'CV2.noisy' = list()
+                         , 'Gtest.noisy' = list())
       .self$nodes = data$domain$name
       .check_all_binary(data$domain)
       .self$pairwise.table <-data.frame(dk.name = character()
@@ -51,7 +52,9 @@ DependenceGraph <- setRefClass(
         epsilon.alpha.1 <- amplify_epsilon_under_sampling(epsilon.1, beta)
         sensitivity.scale.mi <- compute_mi_sensitivity_scale(.self$N, .self$flag.all.binary)
         b.scale.mi <- 2 * sensitivity.scale.mi / epsilon.alpha.1
-        print(paste("beta", beta, "epsilon alpha", epsilon.alpha.1, "sample size", .self$N))
+        print(paste("beta", beta
+                    , "epsilon alpha", epsilon.alpha.1
+                    , "sample size", .self$N))
       }
       .construct_dep_graph(data, flag.noise, b.scale.mi)
     },
@@ -103,14 +106,13 @@ DependenceGraph <- setRefClass(
         chi2 <- sum((curr_xtab - expected_sum) ** 2 / expected_sum, na.rm = TRUE)
         pvalue <- 1 - pchisq(chi2, df = (dk - 1) * (dl - 1))
         chi2.critical <- qchisq((1 - .self$thresh[['pvalue']]), df = (dk - 1) * (dl - 1))
-        .filter_association_edges(pair, chi2, chi2.critical, type="chi2")
+        .filter_association_edges(pair, chi2, chi2.critical, type = "chi2")
         
         #compute mi and Gtest
         mi <- mi.empirical(curr_xtab, unit = 'log')
         
-        #to-do: fix CV.noisy
         CV <- sqrt(chi2 / (.self$N * (min(dk, dl) - 1)))
-        .filter_association_edges(pair, CV, .self$thresh[['CV']], type="CV")
+        .filter_association_edges(pair, CV, .self$thresh[['CV']], type = "CV")
         
         if (flag.noise) {
           CV2.RH <- (.self$thresh[['CV']] ^ 2) * (min(dk, dl) - 1)/2 + noise.thresh.CV2
@@ -121,17 +123,22 @@ DependenceGraph <- setRefClass(
           }           
           .filter_association_edges(pair, CV2.LH, CV2.RH, 'CV2.noisy')
           Gtest.LH <- mi + r(Lap.Gtest)(1) 
-          Gtest.RH <- chi2.critical/(2*.self$N) + noise.thresh.Gtest
+          Gtest.RH <- chi2.critical / (2 * .self$N) + noise.thresh.Gtest
           .filter_association_edges(pair, Gtest.LH, Gtest.RH, 'Gtest.noisy')          
         }else{
           CV2.LH <- mi
-          CV2.RH <- (.self$thresh[['CV']] ^ 2) * (min(dk, dl) - 1)/2
+          CV2.RH <- (.self$thresh[['CV']] ^ 2) * (min(dk, dl) - 1) / 2
           Gtest.LH <- mi
-          Gtest.RH <- chi2.critical/(2*.self$N)
+          Gtest.RH <- chi2.critical / (2 * .self$N)
           
         }
-        .append_pairwise_association_table(dk.name, dl.name, dk, dl, chi2, mi, Gtest.LH, Gtest.RH
-                                           , chi2.critical, CV, CV2.LH, CV2.RH, pvalue)
+        .append_pairwise_association_table(dk.name, dl.name
+                                           , dk, dl
+                                           , chi2, mi
+                                           , Gtest.LH, Gtest.RH
+                                           , chi2.critical
+                                           , CV, CV2.LH, CV2.RH
+                                           , pvalue)
         
       }      
       
@@ -139,7 +146,8 @@ DependenceGraph <- setRefClass(
     
     .append_pairwise_association_table = function(dk.name, dl.name, dk, dl
                                                   , chi2, mi, Gtest.LH, Gtest.RH
-                                                  , chi2.critical, CV, CV2.LH, CV2.RH, pvalue) {
+                                                  , chi2.critical
+                                                  , CV, CV2.LH, CV2.RH, pvalue) {
       newrow<-data.frame(dk.name = dk.name
                          , dl.name = dl.name
                          , dk = dk

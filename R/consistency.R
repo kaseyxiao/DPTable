@@ -10,7 +10,8 @@ ConsistentMargin <- setRefClass (
     debug = "logical"
   ),
   methods = list(
-    initialize = function(N, cliques, domain, clique.noisy.freq, flag.debug = FALSE) {
+    initialize = function(N, cliques, domain
+                          , clique.noisy.freq, flag.debug = FALSE) {
       .self$N <- N
       .self$cliques <- cliques
       names(.self$cliques) <- paste('C', seq(length(.self$cliques)), sep="")
@@ -20,24 +21,26 @@ ConsistentMargin <- setRefClass (
       names(.self$clique.noisy.freq) <- names(.self$cliques)
       .self$debug <- flag.debug
     },
-    fix_negative_entry_approx = function(flag.set = TRUE){
+    
+    fix_negative_entry_approx = function(flag.set = TRUE) {
       curr.freq.list <- .self$clique.noisy.freq
-      for(i in seq_along(curr.freq.list)){
-        if(length(which(curr.freq.list[[i]]>0))>0){
+      for (i in seq_along(curr.freq.list)) {
+        if (length(which(curr.freq.list[[i]] > 0)) > 0) {
           margin.noisy <- curr.freq.list[[i]]
-          margin.sorted<-sort.int(margin.noisy, index.return=TRUE, decreasing=TRUE)
-          margin.sorted.pos<-margin.sorted$x[which(margin.sorted$x>0)]
-          if(length(margin.sorted.pos)>0){
-            margin.cum<-cumsum(margin.sorted.pos)
-            dist<-abs(.self$N-margin.cum)
-            cut.pos<-which(dist==min(dist))
-            idx<-margin.sorted$ix[1:cut.pos]       
-            margin.noisy[-idx]<-0
-            curr.freq.list[[i]]<-margin.noisy        
-          }else{
+          margin.sorted <- sort.int(margin.noisy, index.return = TRUE
+                                    , decreasing = TRUE)
+          margin.sorted.pos <- margin.sorted$x[which(margin.sorted$x > 0)]
+          if (length(margin.sorted.pos) > 0) {
+            margin.cum <- cumsum(margin.sorted.pos)
+            dist <- abs(.self$N - margin.cum)
+            cut.pos <- which(dist == min(dist))
+            idx <- margin.sorted$ix[1: cut.pos]       
+            margin.noisy[-idx] <- 0
+            curr.freq.list[[i]] <- margin.noisy        
+          } else {
             #all are negative values
-            expected=.self$N/length(curr.freq.list[[i]])
-            curr.freq.list[[i]]<-rep(expected, length(curr.freq.list[[i]]))
+            expected <- .self$N / length(curr.freq.list[[i]])
+            curr.freq.list[[i]] <- rep(expected, length(curr.freq.list[[i]]))
           }
           
         }
@@ -47,39 +50,41 @@ ConsistentMargin <- setRefClass (
       }
       return(curr.freq.list)  
     },
-    enforce_mutual_consistency = function(){
+    enforce_mutual_consistency = function() {
 #       browser()
       #Step 1: enforce same counts in each marginal
-      for(cname in .self$domain$name){
-        .self$clique.noisy.freq[[cname]] <- .self$clique.noisy.freq[[cname]]/sum(.self$clique.noisy.freq[[cname]])*.self$N
+      for (cname in .self$domain$name) {
+        .self$clique.noisy.freq[[cname]] <- .self$clique.noisy.freq[[cname]] /
+          sum(.self$clique.noisy.freq[[cname]]) * .self$N
       }
       #record attr-clique appearance
       register_attr_to_clique()
       #keep clique names consistent
       uni<-unique(.self$register)
-      if(ncol(uni) > 1){
-        attr.group.key<-uni[do.call(order, uni),]
-        consist.order<-get_consistency_order(attr.group.key)
+      if (ncol(uni) > 1) {
+        attr.group.key <- uni[do.call(order, uni),]
+        consist.order <- get_consistency_order(attr.group.key)
         print(consist.order)
         
         #Step 2: enforce mutual consistency
-        for(i in seq_along(consist.order$seq)){
-          attr.intersect<-consist.order$seq[[i]]
-          cq.names<-consist.order$cliques[[i]]
-          single.obs<-list()
-          weights<-list()
-          for(cname in cq.names){
+        for (i in seq_along(consist.order$seq)) {
+          attr.intersect <- consist.order$seq[[i]]
+          cq.names <- consist.order$cliques[[i]]
+          single.obs <- list()
+          weights <- list()
+          for (cname in cq.names) {
             #         if (.self$debug) browser()
             cq.attrs <- .self$cliques[[cname]]
             freq.noisy <- .self$clique.noisy.freq[[cname]]
             clique.margin <- .self$compose_noisy_clique_margin_data_table(cname, freq.noisy)
-            single.obs[[cname]] <- project_in_clique_margin_data_table(clique.margin, attr.intersect)
+            single.obs[[cname]] <- project_in_clique_margin_data_table(clique.margin
+                                                                       , attr.intersect)
             attr.remain <- cq.attrs[! cq.attrs %in% attr.intersect]
             dsize.remain <- sapply(attr.remain, function(x) get_dsize(x))
             weights[[cname]] <- prod(unlist(dsize.remain))
           }   
-          avg<-inverse_var_weighting(single.obs,weights)
-          for(cname in cq.names){
+          avg <- inverse_var_weighting(single.obs,weights)
+          for (cname in cq.names) {
             weight <- weights[[cname]]
             cq.attrs <- .self$cliques[[cname]]
             freq.noisy <- .self$clique.noisy.freq[[cname]]
@@ -100,12 +105,15 @@ ConsistentMargin <- setRefClass (
       return(.self$clique.noisy.freq)
     },
     register_attr_to_clique = function(){
-      curr.register<-data.frame(setNames(replicate(length(.self$cliques),logical(0), simplify = FALSE)
-                                    , paste('C', seq(length(.self$cliques)), sep=""))
+      curr.register <- data.frame(setNames(replicate(length(.self$cliques)
+                                                   ,logical(0), simplify = FALSE)
+                                    , paste('C'
+                                            , seq(length(.self$cliques))
+                                            , sep = ""))
       ) 
-      for(attr in .self$all.attrs){
+      for (attr in .self$all.attrs) {
         row<-sapply(.self$cliques, function(x) attr %in% x)
-        curr.register[nrow(curr.register)+1,]<-row
+        curr.register[nrow(curr.register)+1, ] <- row
       }
       row.names(curr.register) <- .self$all.attrs
       .self$register <- curr.register
@@ -116,10 +124,11 @@ ConsistentMargin <- setRefClass (
       consist.seq<-list()
       overlap.clq<-list()
       count<-1
-      for(i in seq_len(nrow(attr.group.key))) {
-        key<-attr.group.key[i,]
-        if(length(which(key==TRUE))>=2){
-          index.match <- which(apply(mapply(.self$register, key, FUN="=="), MARGIN=1, FUN=all))
+      for (i in seq_len(nrow(attr.group.key))) {
+        key<-attr.group.key[i, ]
+        if (length(which(key == TRUE)) >= 2) {
+          index.match <- which(apply(mapply(.self$register, key, FUN="==")
+                                     , MARGIN=1, FUN=all))
           base.seq[[count]]<-sort(.self$all.attrs[index.match]) 
           overlap.clq[[count]]<-colnames(attr.group.key)[which(key==TRUE)]
           count<-count+1
@@ -128,33 +137,34 @@ ConsistentMargin <- setRefClass (
       consist.seq<-base.seq
       
       
-      while(length(base.seq)>1){
+      while (length(base.seq) > 1) {
         #print(base.seq)
-        subset.cands<-combn(base.seq, 2)
+        subset.cands <- combn(base.seq, 2)
         #which(apply(sapply(colnames(register), function(x) {key==register[,x]}), MARGIN=2, FUN=all))
-        overlap.subset<-apply(subset.cands, 2
+        overlap.subset <- apply(subset.cands, 2
                               , function(x){
                                 index<-unique(unlist(x))
-                                match<-colnames(register)[apply(register[index,], 2, FUN=all)]
+                                match<-colnames(register)[apply(register[index, ]
+                                                                , 2, FUN=all)]
                                 return(match)
                               })
-        if (length(overlap.subset)>0){
-          match.index<-which(sapply(overlap.subset, function(x) length(x)>=2))
+        if (length(overlap.subset) > 0) {
+          match.index<-which(sapply(overlap.subset, function(x) length(x) >= 2))
         }else{
           match.index <- character(0)
         }
           
-          if(length(match.index)>0){
-            cands<-apply(as.matrix(subset.cands[, match.index]), 2, try(as.list))
-            cand.seq<-lapply(cands, function(x) sort(unique(unlist(x))))     
-            base.seq<-setdiff(cand.seq, consist.seq)
-            cand.overlap<-overlap.subset[match.index[match(base.seq, cand.seq)]]
-            consist.seq<-append(consist.seq, base.seq) 
-            overlap.clq<-append(overlap.clq, cand.overlap)
+          if (length(match.index) > 0) {
+            cands <- apply(as.matrix(subset.cands[, match.index]), 2, try(as.list))
+            cand.seq <- lapply(cands, function(x) sort(unique(unlist(x))))     
+            base.seq <- setdiff(cand.seq, consist.seq)
+            cand.overlap <- overlap.subset[match.index[match(base.seq, cand.seq)]]
+            consist.seq <- append(consist.seq, base.seq) 
+            overlap.clq <- append(overlap.clq, cand.overlap)
             
             
           }else{
-            base.seq<-list()
+            base.seq <- list()
           }
           
           
@@ -216,7 +226,7 @@ ConsistentMargin <- setRefClass (
     enforce_global_consistency = function(){
       nattempt <- 1
       ii = 1
-      while(ii <= nattempt){
+      while (ii <= nattempt) {
         cat("enforce consistency attempt:", ii, "\n")
         fix_negative_entry_approx(flag.set = TRUE)
         enforce_mutual_consistency()
@@ -229,11 +239,11 @@ ConsistentMargin <- setRefClass (
       return(.self$clique.noisy.freq)
     },
     
-    is_all_positive = function(){
-      neg.elem<-which(unlist(.self$clique.noisy.freq, use.names=FALSE)<0)
-      if(length(neg.elem)>0){
+    is_all_positive = function() {
+      neg.elem <- which(unlist(.self$clique.noisy.freq, use.names = FALSE) < 0)
+      if (length(neg.elem) > 0) {
         return(FALSE)
-      }else{
+      } else {
         return(TRUE)
       }
     } 

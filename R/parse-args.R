@@ -51,7 +51,7 @@ parse_args <- function(args) {
     specs$nrun <- 5
   }
 
-  if (('s' %in% names(options.args)) && (options.args['s']==TRUE)){
+  if (('s' %in% names(options.args)) && (options.args['s'] == TRUE)) {
     specs$flag.sample <- TRUE
   }else {
     specs$flag.sample <- FALSE

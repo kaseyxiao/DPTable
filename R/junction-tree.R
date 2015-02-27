@@ -50,7 +50,7 @@ JunctionTree <- setRefClass(
           saveRDS(.self$jtree, file = paste(out.path, '-jtree.Rdata', sep=""))
         }
         
-      }else{
+      } else {
         .self$jtree <- readRDS(jtree.file) 
       }
       .self$consistent = TRUE
@@ -65,7 +65,8 @@ JunctionTree <- setRefClass(
     
     .output_cliques = function(filepath) {
       file.conn <- file(paste(filepath, '.clique', sep = ""))
-      writeLines(unlist(lapply(.self$jtree$cliques, paste, collapse = " ")), file.conn)
+      writeLines(unlist(lapply(.self$jtree$cliques, paste, collapse = " "))
+                 , file.conn)
       close(file.conn) 
     },
     
@@ -87,7 +88,7 @@ JunctionTree <- setRefClass(
         .self$POTgrain.consistent <- propagate(compile(gin.consistent))
       }
     },
-    simulate = function(num.of.syn, flag.consistent=TRUE, flag.debug=FALSE){
+    simulate = function(num.of.syn, flag.consistent=TRUE, flag.debug=FALSE) {
       if(.self$debug && flag.debug) browser() 
       if (flag.consistent) {
         curr.grain <- .self$POTgrain.consistent
@@ -108,11 +109,12 @@ JunctionTree <- setRefClass(
         if(.self$debug && flag.debug) browser() 
         predict.attr <- predict.attrs[[ii]][['attr.name']]
         f <- as.formula(paste(predict.attr, "~.", sep = ""))
-        model.sim <- svm(f, data.sim, kernel="linear")
+        model.sim <- svm(f, data.sim, kernel = "linear")
         res <- predict(model.sim, newdata = data.test)
         predict.values <- predict.attrs[[ii]][['predict.value']]
         sim.results <- unlist(lapply(res, function(x) {x %in% predict.values}))
-        true.results <- unlist(lapply(data.test[[predict.attr]], function(x) {x %in% predict.values}))
+        true.results <- unlist(lapply(data.test[[predict.attr]], function(x) 
+          {x %in% predict.values}))
         miss.rate <- length(which(sim.results != true.results))/length(sim.results)
         return(miss.rate)
       })
@@ -121,7 +123,8 @@ JunctionTree <- setRefClass(
       
     },
     
-    svm_miss_rate = function(data.origin, test.attrs, flag.consistent, flag.debug = TRUE) {
+    svm_miss_rate = function(data.origin, test.attrs
+                             , flag.consistent, flag.debug = TRUE) {
       if(.self$debug && flag.debug) browser() 
       if (flag.consistent) {
         curr.grain <- .self$POTgrain.consistent
@@ -138,12 +141,13 @@ JunctionTree <- setRefClass(
         if(.self$debug && flag.debug) browser() 
         test.attr <- test.attrs[ii]
         f <- as.formula(paste(test.attr, "~.", sep = ""))
-        model.sim <- svm(f, data.sim[1:idx, ], kernel="linear")
-        model.origin <- svm(f, data=data.origin[1:idx,], kernel="linear")
+        model.sim <- svm(f, data.sim[1:idx, ], kernel = "linear")
+        model.origin <- svm(f, data = data.origin[1:idx, ], kernel = "linear")
         res <- predict(model.sim, newdata = test.data)
         res.origin <- predict(model.origin, newdata = test.data)
-        miss.rate <- length(which(res != test.data[[test.attr]]))/length(res)
-        miss.rate.origin <- length(which(res.origin != test.data[[test.attr]]))/length(res.origin)
+        miss.rate <- length(which(res != test.data[[test.attr]])) / length(res)
+        miss.rate.origin <- length(which(res.origin != test.data[[test.attr]])) / 
+          length(res.origin)
         return(miss.rate)
       })
       return(miss.rates)
@@ -152,7 +156,9 @@ JunctionTree <- setRefClass(
     
     
     distance_kway_marginal = function(attrs, k, data.origin, do.consistent = FALSE
-                                      , flag.debug = FALSE, flag.random = FALSE, num.of.query = 200) {
+                                      , flag.debug = FALSE
+                                      , flag.random = FALSE
+                                      , num.of.query = 200) {
 #       browser()
       if (flag.random) {
         k.way.attrs <-  get_kway_random_query(attrs, k, num.of.query)
@@ -172,52 +178,57 @@ JunctionTree <- setRefClass(
 #       kl.dist<-rep(0, num.k.way)
       t <- data.table(data.origin)
       for (i in seq_len(num.k.way)) {
-        attr.group<-k.way.attrs[,i]
-        margin.noisy<-querygrain(.self$POTgrain, nodes = attr.group, 
+        attr.group <- k.way.attrs[, i]
+        margin.noisy <- querygrain(.self$POTgrain, nodes = attr.group, 
                                  type = "joint", result = "data.frame")
-        sum.origin=nrow(data.origin)
+        sum.origin <- nrow(data.origin)
         setkeyv(t, attr.group)
         curr_levels = lapply(attr.group, function(x) levels(t[, get(x)]))
         # omit "by = .EACHI" in data.table <= 1.9.2
         margin.origin <- t[do.call(CJ, curr_levels)
                  , list(freq.origin = .N), allow.cartesian = T, by = .EACHI]
         N <- sum(margin.origin$freq.origin)
-        margin.origin$freq.origin = margin.origin$freq.origin/N
+        margin.origin$freq.origin <- margin.origin$freq.origin / N
         #merge two results
-        margin <- plyr::join(margin.origin, margin.noisy, by=attr.group)
-        total.var.dist[i]<-0.5*dist(rbind(margin$freq.origin, margin$Freq)
-                                    , method="minkowski", p=1)
+        margin <- plyr::join(margin.origin, margin.noisy, by = attr.group)
+        total.var.dist[i] <- 0.5*dist(rbind(margin$freq.origin, margin$Freq)
+                                    , method = "minkowski", p = 1)
         cat(i, "total.var.dist:", total.var.dist[i], "\n")
-        L2.error[i]<-dist(rbind(margin$freq.origin*N, margin$Freq*N)
-                                     , method="minkowski", p=2)/N
+        L2.error[i]<-dist(rbind(margin$freq.origin * N, margin$Freq * N)
+                                     , method = "minkowski", p = 2) / N
         cat(i, "L2.error:", L2.error[i], "\n")
         
 
         if (do.consistent && .self$with.margin.noise) {
-          if(.self$debug && flag.debug) browser()
-          margin.noisy.consistent <- querygrain(.self$POTgrain.consistent, nodes = attr.group, 
-                                                type = "joint", result = "data.frame")  
-          margin.consistent <- plyr::join(margin.origin, margin.noisy.consistent, by=attr.group)
-          total.var.dist.consistent[i]<-0.5*dist(rbind(margin.consistent$freq.origin
+          if (.self$debug && flag.debug) browser()
+          margin.noisy.consistent <- querygrain(.self$POTgrain.consistent
+                                                , nodes = attr.group 
+                                                , type = "joint"
+                                                , result = "data.frame")  
+          margin.consistent <- plyr::join(margin.origin
+                                          , margin.noisy.consistent
+                                          , by = attr.group)
+          total.var.dist.consistent[i] <- 0.5 * dist(rbind(margin.consistent$freq.origin
                                                        , margin.consistent$Freq)
-                                                 , method="minkowski", p=1)
+                                                 , method = "minkowski", p = 1)
           cat(i, "total.var.dist with consistency:", total.var.dist.consistent[i], "\n")
-          L2.error.consistent[i]<-dist(rbind(margin.consistent$freq.origin*N, margin.consistent$Freq*N)
-                         , method="minkowski", p=2)/N
+          L2.error.consistent[i] <- dist(rbind(margin.consistent$freq.origin * N
+                                             , margin.consistent$Freq * N)
+                                       , method = "minkowski", p = 2) / N
           cat(i, "L2.error with consistency:", L2.error.consistent[i], "\n")
         }
 
-#         kl.dist[i]<-dist(rbind(margin$freq.origin, margin$Freq)
-#                          , method="minkowski", p=2)
+#         kl.dist[i] <- dist(rbind(margin$freq.origin, margin$Freq)
+#                          , method = "minkowski", p = 2)
       }
-      ans<-list()
-      ans$var<-total.var.dist
+      ans <- list()
+      ans$var <- total.var.dist
       ans$var.consistent <- total.var.dist.consistent
       ans$L2.error <- L2.error
       ans$L2.error.consistent <- L2.error.consistent
       return(ans)
     },
-    get_kway_random_query = function(attrs, k, num.of.query){
+    get_kway_random_query = function(attrs, k, num.of.query) {
       if (k > length(attrs)) {
         cat("Not enough", k,  "attributes in total", length(domain$name), "attributes")
         stop()
@@ -226,7 +237,7 @@ JunctionTree <- setRefClass(
       qcount <- 0
       while (qcount < num.of.query) {
         curr.attrs <- sample(attrs, k)
-        flag.contain <- any(sapply(queries, function(x) all(sort(x)==sort(curr.attrs))))
+        flag.contain <- any(sapply(queries, function(x) all(sort(x) == sort(curr.attrs))))
         if (!flag.contain){
           queries[[qcount + 1]] <- curr.attrs
           qcount <- qcount + 1
@@ -239,9 +250,13 @@ JunctionTree <- setRefClass(
       
     },
     
-    kway_random_query = function(data.origin, domain, k, num.of.query, flag.consistency = TRUE) {
+    kway_random_query = function(data.origin
+                                 , domain, k
+                                 , num.of.query
+                                 , flag.consistency = TRUE) {
       if (k > length(domain$name)) {
-        cat("Not enough", k,  "attributes in total", length(domain$name), "attributes")
+        cat("Not enough", k,  "attributes in total"
+            , length(domain$name), "attributes")
         stop()
       }
       if (flag.consistency && !is.null(.self$POTgrain.consistent)) {
@@ -255,10 +270,10 @@ JunctionTree <- setRefClass(
       count.noisy <- c()
       for (ii in seq_len(num.of.query)) {
         attrs<-sample(domain$name, k)
-        random.levels <- lapply(attrs, function(x) sample(domain$levels[[x]], size=1))
+        random.levels <- lapply(attrs, function(x) sample(domain$levels[[x]], size = 1))
         states <- lapply(random.levels, function(x) as.factor(x))
         net <- setEvidence(curr.grain, nodes = attrs, states = as.vector(unlist(states)))
-        count.noisy[ii] <- pEvidence(net)*N
+        count.noisy[ii] <- pEvidence(net) * N
         setkeyv(t, attrs)
         count.origin[ii] <- t[states, .N]
       }
@@ -332,7 +347,9 @@ JunctionTree <- setRefClass(
         
         if (.self$consistent) {
           .self$clique.noisy.freq.consistent <- consistency$enforce_global_consistency() 
-          .init_potential_data_table(data, .self$clique.noisy.freq.consistent, do.consistent = TRUE)
+          .init_potential_data_table(data
+                                     , .self$clique.noisy.freq.consistent
+                                     , do.consistent = TRUE)
         }
 
         
@@ -344,23 +361,23 @@ JunctionTree <- setRefClass(
       .message_passing()
     },
 
-    .inject_marginal_noise_data_table = function(data, epsilon, margins){
+    .inject_marginal_noise_data_table = function(data, epsilon, margins) {
       t <- data.table(data)
-      margin.noisy.freq<-list()
-      sen=1
+      margin.noisy.freq <- list()
+      sen <- 1
       num.margins<-length(margins)
-      b=2*(num.margins)*sen/epsilon
-      Lap<-DExp(rate=1/b)
+      b <- 2 * (num.margins) * sen / epsilon
+      Lap <- DExp(rate = 1 / b)
       for (i in seq_len(length(margins))) {
-        cq<-margins[[i]]
+        cq <- margins[[i]]
         setkeyv(t, cq)
-        curr_levels = lapply(cq, function(x) levels(t[,get(x)]))
+        curr_levels <- lapply(cq, function(x) levels(t[, get(x)]))
         # omit "by = .EACHI" in data.table <= 1.9.2
         #t[CJ(levels(A1), levels(A2), levels(A3), .N, allow.cartesian = T, by = .EACHI]
         xxx <- t[do.call(CJ, curr_levels)
                  , list(freq = .N), allow.cartesian = T, by = .EACHI][, freq]
         noises <- r(Lap)(length(xxx))
-        freq.noisy <- xxx+noises
+        freq.noisy <- xxx + noises
         #print(cbind(xxx, freq.noisy))
         margin.noisy.freq[[i]] <- freq.noisy
       } 
@@ -372,10 +389,10 @@ JunctionTree <- setRefClass(
       .self$clusters <- clusters
     },
 
-    match_clique_to_cluster = function(cid){
+    match_clique_to_cluster = function(cid) {
       clique <- .self$jtree$cliques[[cid]]
-      for(ii in seq_len(length(.self$clusters))){
-        if(all(clique %in% .self$clusters[[ii]])){
+      for (ii in seq_len(length(.self$clusters))) {
+        if (all(clique %in% .self$clusters[[ii]])) {
           return(ii)
         }
       }
@@ -383,7 +400,7 @@ JunctionTree <- setRefClass(
     },
   
 
-    set_clique_margin_from_cluster = function(data, domain, noisy.freq){
+    set_clique_margin_from_cluster = function(data, domain, noisy.freq) {
       t <- data.table(data)
       cliques <- .self$jtree$cliques
       ans <- list()
@@ -397,13 +414,14 @@ JunctionTree <- setRefClass(
         cluster.freq.noisy <- noisy.freq[[match_ids[i]]]
         margin.cluster <- cbind(index, cluster.freq.noisy)   
 
-        curr_cq_levels = lapply(cq, function(x) domain$levels[[x]])
+        curr_cq_levels <- lapply(cq, function(x) domain$levels[[x]])
         # omit "by = .EACHI" in data.table <= 1.9.2
         #t[CJ(levels(A1), levels(A2), levels(A3), .N, allow.cartesian = T, by = .EACHI]
         margin.cluster <- data.table(margin.cluster)
         setkeyv(margin.cluster, cq)
         freq.noisy <- margin.cluster[do.call(CJ, curr_cq_levels)
-                        , list(Freq=sum(cluster.freq.noisy)), allow.cartesian = T, by = .EACHI][, Freq]
+                        , list(Freq=sum(cluster.freq.noisy))
+                        , allow.cartesian = T, by = .EACHI][, Freq]
         
 
         ans[[i]] <- freq.noisy
@@ -415,15 +433,15 @@ JunctionTree <- setRefClass(
     .inject_clique_marginal_noise_data_table = function(data, epsilon.2) {
       t <- data.table(data)
       cliques <- .self$jtree$cliques
-      .self$clique.noisy.freq<-list()
-      sen=1
-      num.cliques<-length(cliques)
-      b=2*(num.cliques)*sen/epsilon.2
-      Lap<-DExp(rate=1/b)
+      .self$clique.noisy.freq <- list()
+      sen <- 1
+      num.cliques <- length(cliques)
+      b <- 2 * (num.cliques) * sen / epsilon.2
+      Lap <- DExp(rate = 1 / b)
       for (i in seq_len(length(cliques))) {
-        cq<-cliques[[i]]
+        cq <- cliques[[i]]
         setkeyv(t, cq)
-        curr_levels = lapply(cq, function(x) levels(t[,get(x)]))
+        curr_levels <- lapply(cq, function(x) levels(t[, get(x)]))
         # omit "by = .EACHI" in data.table <= 1.9.2
         #t[CJ(levels(A1), levels(A2), levels(A3), .N, allow.cartesian = T, by = .EACHI]
         xxx <- t[do.call(CJ, curr_levels)
@@ -434,7 +452,10 @@ JunctionTree <- setRefClass(
         .self$clique.noisy.freq[[i]] <- freq.noisy
       } 
     },
-    .init_potential_data_table = function(data, clique.noisy.freq = NULL, do.consistent = FALSE, flag.debug = FALSE) {
+    .init_potential_data_table = function(data
+                                          , clique.noisy.freq = NULL
+                                          , do.consistent = FALSE
+                                          , flag.debug = FALSE) {
       cliques<-.self$jtree$cliques
       seps<-.self$jtree$separators
       ans <- vector("list", length(cliques))
@@ -445,7 +466,7 @@ JunctionTree <- setRefClass(
         cq  <- cliques[[ii]]
         sp  <- seps[[ii]]
         setkeyv(t, cq)
-        curr_levels = lapply(cq, function(x) levels(t[,get(x)]))
+        curr_levels <- lapply(cq, function(x) levels(t[, get(x)]))
         # omit "by = .EACHI" in data.table <= 1.9.2
         #t[CJ(levels(A1), levels(A2), levels(A3), .N, allow.cartesian = T, by = .EACHI]
         xxx <- t[do.call(CJ, curr_levels)
@@ -453,13 +474,13 @@ JunctionTree <- setRefClass(
         if (.self$debug && flag.debug) browser()
         .self$clique.freq[[ii]] <- xxx[, freq]
         
-        if(length(clique.noisy.freq) > 0){
+        if (length(clique.noisy.freq) > 0) {
           freq.noisy <- clique.noisy.freq[[ii]]
-          xxx[, freq.noisy:=freq.noisy]
+          xxx[, freq.noisy := freq.noisy]
 #           print(xxx)
           f <- as.formula(paste("freq.noisy~", paste(cq, collapse = "+")))
           xxx <- xtabs(formula = f, data = xxx) 
-        }else{
+        } else {
           f <- as.formula(paste("freq~", paste(cq, collapse = "+")))
           xxx <- xtabs(formula = f, data = xxx)           
         }
@@ -467,9 +488,9 @@ JunctionTree <- setRefClass(
         t.cq <- tableMargin(xxx, cq)
         names(dimnames(t.cq)) <- cq
         
-        if (!is.null(seps) && length(sp)>0){
+        if (!is.null(seps) && length(sp) > 0) {
           t.sp      <- tableMargin(t.cq, sp)
-          ans[[ii]] <- tableOp2(t.cq, t.sp, op=`/`)
+          ans[[ii]] <- tableOp2(t.cq, t.sp, op = `/`)
         } else {
           ans[[ii]] <- t.cq / sum(t.cq)
         }   
