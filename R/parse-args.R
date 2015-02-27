@@ -48,7 +48,7 @@ parse_args <- function(args) {
   if ("nrun" %in% names(options.args)) {
     specs$nrun <- as.numeric(options.args['nrun'])
   }else{
-    specs$nrun <- 5
+    specs$nrun <- 10
   }
 
   if (('s' %in% names(options.args)) && (options.args['s'] == TRUE)) {
