@@ -60,13 +60,19 @@ normalize_data <- function(data){
 }
 
 transform_data <- function(predict.attr, data.train, data.test
-                           , pos.values, normalize=TRUE, scale=TRUE) {
+                           , pos.values, normalize=TRUE, scale=TRUE, add.bias = TRUE) {
   f <- as.formula(paste(predict.attr, "~.", sep = ""))
   rows <- rbind(data.train, data.test)
   dummies <- dummyVars(f, data = rows)
   xxx <- predict(dummies, newdata = rows)
   preProcValues <- preProcess(xxx, method=c("range"))
   xxx <- predict(preProcValues, xxx)
+  if(add.bias){
+    bias <- rep(1, nrow(xxx)) # add biased item
+    dim(bias) <- c(length(bias), 1)
+    colnames(bias) <- "bias"
+    xxx <- cbind(xxx, bias)
+  }
   response <-   sapply(rows[, predict.attr], function(x) {
     if (x %in% pos.values){
       return(1)
@@ -93,6 +99,17 @@ transform_data <- function(predict.attr, data.train, data.test
 compute_miss_rate <- function(predict, real){
   return(length(which(predict!=real))/length(real))
 }
+compute_svm_with_bias <- function(w, x){
+  d <- length(w) - 1
+  bias <- as.numeric(w[length(w)])
+  w <- w[1:(d-1)]
+  b <- x[, (d+1)]
+  x <- x[, c(2:d)]
+  browser()
+  ans <- t(as.matrix(w) %*% t(as.matrix(x)) - b * bias) 
+  ans <- sapply(ans, FUN=get_sign)
+  
+}
 compute_svm <- function(w, x, bias){
   ans <- t(as.matrix(w) %*% t(as.matrix(x)) - bias)
   ans <- sapply(ans, FUN=get_sign)
@@ -113,11 +130,11 @@ write_transformed_data <- function(out.file, task.attr, predict.attr, x, y){
              paste("feature.dim", ncol(x)))
   cat(lines, file=out.file, sep="\n")
   data <- cbind(y, x)
-#   colnames(data) <- c(predict.attr, colnames(x))
+  colnames(data) <- c(predict.attr, colnames(x))
   write.table(data
               , out.file
               , row.names = FALSE
-              , col.names = FALSE
+              , col.names = TRUE
               , quote=FALSE
               , sep = "\t"
               , append=TRUE)
@@ -259,4 +276,28 @@ write.libsvm = function( filename, x, y ) {
   
   # close the connection
   close( f )
+}
+
+init_task <- function(){
+  #Train2: A10: gender; A4: education; A15: salary; A6: marital
+  #A10 pos.values: c(1), to predict whether is male
+  #A4 pos.values: c(9, 10, 11, 12, 13, 14, 15), to predict whether holds a post-secondary degree
+  #A15 pos.values: c(1) #predict whether makes over 50K per year
+  #A6 pos.values:c(4) #predict whether never married
+  tasks <- NULL
+  tasks$Train2[['gender']] <- list()
+  tasks$Train2[['gender']][['attr.name']]<-'A10'
+  tasks$Train2[['gender']][['predict.value']]<-c("Male") #predict whether is male
+  tasks$Train2[['education']] <- list()
+  tasks$Train2[['education']][['attr.name']] <- 'A4'
+  tasks$Train2[['education']][['predict.value']] <- c("Some-college", "Assoc-voc", "Assoc-acdm"                                                                               
+                                                      ,"Bachelors","Masters","Prof-school","Doctorate"
+  )  #predict whether holds a post-secondary degree
+  tasks$Train2[['salary']] <- list()
+  tasks$Train2[['salary']][['attr.name']] <- 'A15'
+  tasks$Train2[['salary']][['predict.value']] <- c(">50K") #predict whether makes over 50K per year
+  tasks$Train2[['marital']] <- list()
+  tasks$Train2[['marital']][['attr.name']] <- 'A6'
+  tasks$Train2[['marital']][['predict.value']] <- c("Never-married") #predict whether never married
+  return(tasks)
 }
