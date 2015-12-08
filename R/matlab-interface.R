@@ -120,6 +120,7 @@ load_cliques <- function(out.dir, filename){
 library("R.oo")
 
 load_matlab <- function() {
+  print("connecting matlab...")
   closeAllConnections()
   Matlab$startServer(minimize=FALSE, port=9998)
   matlab <<- Matlab(port=9998)
@@ -134,6 +135,7 @@ load_matlab <- function() {
 
 close_matlab <- function() {
 #   browser()
+  print("closing matlab...")
   evaluate(matlab, "pid = feature('getpid')")
   ans <- getVariable(matlab, "pid")
   pid <- as.integer(ans$pid)

@@ -30,10 +30,12 @@ load_source <- function() {
     r.scripts <- list.files( path = "R/"
                          , pattern = ".*\\.[R]$"
                          , recursive = TRUE )
-    
-    # loop through and source() each one except init.R
+    ignore.files = c("init.R", "preprocess.R", "laplace.R", "objective.R")
+    # loop through and source() except the ones in ignore.files
     for ( i in r.scripts ) {
-      if (i != "init.R") {
+      # if (i != "init.R") {
+      if (!(i %in% ignore.files)) {
+        print(paste("loading", i))
         source( paste("R", i, sep="/") )        
       }    
     }
