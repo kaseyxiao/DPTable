@@ -1,5 +1,5 @@
 ## DPTable
-A differentially private tabular data publishing algorithm using sampling and junction tree inference
+A differentially private tabular data publishing algorithm using sampling and junction tree inference.
 
 ####Tips for installation:
 
