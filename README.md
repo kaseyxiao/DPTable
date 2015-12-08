@@ -2,7 +2,9 @@
 A differentially private tabular data publishing algorithm using sampling and junction tree inference
 
 Tips for installation:
+
 Required R library:  R.oo; methods; R.matlab; data.table; distr; entropy; plyr; FNN; e1071; stringr; 
+
 MAKE SURE you have MATLAB installed, otherwise the script will keep waiting to connect matlab.
 
 
