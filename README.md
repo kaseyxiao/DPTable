@@ -1,13 +1,13 @@
 ## DPTable
 A differentially private tabular data publishing algorithm using sampling and junction tree inference
 
-Tips for installation:
+####Tips for installation:
 
 Required R library:  R.oo; methods; R.matlab; data.table; distr; entropy; plyr; FNN; e1071; stringr; 
 
 MAKE SURE you have MATLAB installed, otherwise the script will keep waiting to connect matlab.
 
-
+####Instructions for running the program:
 In Rstudio, 
 first, choose the working directory to the source code directory,
 
@@ -19,7 +19,7 @@ then run
 > system("Rscript exp/run-category.R -f Data3 -e1 0.2 -e2 0.8 -nrun 1 -CV 0.3")
 ```
 
-###Arguments:
+#####Arguments:
 * -f: dataset name
 * -e1: epsilon value for constructing noisy junction tree
 * -e2: epsilon value for injecting noise into the marginal tables
