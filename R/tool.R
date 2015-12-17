@@ -1,4 +1,3 @@
-library("caret")
 
 #read domain file
 
@@ -28,6 +27,7 @@ read_domain <- function(data.id) {
   domain$category <- sapply(domain.info, function(x) process_category(x))
   return(domain)  
 }
+
 
 
 #read data file

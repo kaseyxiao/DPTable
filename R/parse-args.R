@@ -1,8 +1,8 @@
 parse_args <- function(args) {
-  data.names <- c('adult', 'kosarak', 'aol', 'MSNBC'
-                  , 'Data1', 'Data2', 'Data3', 'Data4'
-                  , 'test', 'retail50', 'accidents50'
-                  , 'Train2', 'Train4', 'Train1', 'Train3')
+#   data.names <- c('adult', 'kosarak', 'aol', 'MSNBC'
+#                   , 'Data1', 'Data2', 'Data3', 'Data4'
+#                   , 'test', 'retail50', 'accidents50'
+#                   , 'Train2', 'Train4', 'Train1', 'Train3')
   xxx <- paste(unlist(args), collapse = ' ')
   listoptions <- unlist(strsplit(xxx,'-'))[-1]
   options.args <- sapply(listoptions, function(x) {
@@ -15,11 +15,12 @@ parse_args <- function(args) {
   #print(options.args)
   specs <- list()
   if("f" %in% names(options.args)) {
-    if (options.args['f'] %in% data.names) {
-      specs$data.name <- as.character(options.args['f'])   
-    }else {
-      stop("not valid data file")
-    }
+#     if (options.args['f'] %in% data.names) {
+#       specs$data.name <- as.character(options.args['f'])   
+#     }else {
+#       stop("not valid data file")
+#     }
+          specs$data.name <- as.character(options.args['f'])   
   }else{
     stop("no filename")
   }
@@ -37,6 +38,11 @@ parse_args <- function(args) {
     specs$CV <- as.numeric(options.args['CV'])
   }else{
     specs$CV <- 0.2
+  }
+  if ("sim" %in% names(options.args)) {
+    specs$flag.sim <- options.args['sim']
+  }else{
+    specs$flag.sim <- FALSE
   }
   if ("dir" %in% names(options.args)) {
     specs$dir <- as.character(options.args['dir'])

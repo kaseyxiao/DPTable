@@ -160,9 +160,12 @@ JunctionTree <- setRefClass(
                                       , flag.random = FALSE
                                       , num.of.query = 200) {
 #       browser()
+      print(paste("begin to compute ", k, "-way marginal...", sep=""))
       if (flag.random) {
+        print(paste("begin to compute ",k, "-way random query...", sep=""))
         k.way.attrs <-  get_kway_random_query(attrs, k, num.of.query)
       }else{
+        print(paste("begin to compute all ", k,"-way query...", sep=""))
         k.way.attrs <- combn(attrs,k)        
       }
       num.k.way <- dim(k.way.attrs)[2]
@@ -193,11 +196,13 @@ JunctionTree <- setRefClass(
         margin <- plyr::join(margin.origin, margin.noisy, by = attr.group)
         total.var.dist[i] <- 0.5*dist(rbind(margin$freq.origin, margin$Freq)
                                     , method = "minkowski", p = 1)
-        cat(i, "total.var.dist:", total.var.dist[i], "\n")
         L2.error[i]<-dist(rbind(margin$freq.origin * N, margin$Freq * N)
                                      , method = "minkowski", p = 2) / N
-        cat(i, "L2.error:", L2.error[i], "\n")
-        
+        if(flag.debug){
+          cat(i, "total.var.dist:", total.var.dist[i], "\n")
+          cat(i, "L2.error:", L2.error[i], "\n")
+          
+        }
 
         if (do.consistent && .self$with.margin.noise) {
           if (.self$debug && flag.debug) browser()
@@ -211,11 +216,13 @@ JunctionTree <- setRefClass(
           total.var.dist.consistent[i] <- 0.5 * dist(rbind(margin.consistent$freq.origin
                                                        , margin.consistent$Freq)
                                                  , method = "minkowski", p = 1)
-          cat(i, "total.var.dist with consistency:", total.var.dist.consistent[i], "\n")
           L2.error.consistent[i] <- dist(rbind(margin.consistent$freq.origin * N
                                              , margin.consistent$Freq * N)
                                        , method = "minkowski", p = 2) / N
-          cat(i, "L2.error with consistency:", L2.error.consistent[i], "\n")
+          if (flag.debug){
+            cat(i, "total.var.dist with consistency:", total.var.dist.consistent[i], "\n")
+            cat(i, "L2.error with consistency:", L2.error.consistent[i], "\n")
+          }
         }
 
 #         kl.dist[i] <- dist(rbind(margin$freq.origin, margin$Freq)
@@ -228,7 +235,7 @@ JunctionTree <- setRefClass(
       ans$L2.error.consistent <- L2.error.consistent
       return(ans)
     },
-    get_kway_random_query = function(attrs, k, num.of.query) {
+    get_kway_random_query = function(attrs, k, num.of.query, flag.debug=FALSE) {
       if (k > length(attrs)) {
         cat("Not enough", k,  "attributes in total", length(domain$name), "attributes")
         stop()
@@ -242,7 +249,9 @@ JunctionTree <- setRefClass(
           queries[[qcount + 1]] <- curr.attrs
           qcount <- qcount + 1
         }else{
-          cat(curr.attrs, "\n")
+          if(flag.debug){
+            cat(curr.attrs, "\n")
+          }
         }
       }
       queries <- do.call(cbind, queries)
@@ -320,6 +329,7 @@ JunctionTree <- setRefClass(
         data, domain, noisy.freq = .self$cluster.noisy.freq.consistent)
       .init_potential_data_table(data, .self$clique.noisy.freq)
       .init_potential_data_table(data, .self$clique.noisy.freq.consistent, do.consistent = TRUE)
+      # if(flag.debug) browser()
       .message_passing()
       
     },
@@ -462,7 +472,7 @@ JunctionTree <- setRefClass(
       N=nrow(data)
       t <- data.table(data)
       for (ii in seq_along(cliques)){
-        print(ii)
+        # print(ii)
         cq  <- cliques[[ii]]
         sp  <- seps[[ii]]
         setkeyv(t, cq)
@@ -498,8 +508,10 @@ JunctionTree <- setRefClass(
       attr(ans, "rip")     <-.self$jtree    
       if (!is.null(clique.noisy.freq) && do.consistent) {
         .self$POTlist.consistent <- ans 
+        class(.self$POTlist.consistent) <- "extractPOT"
       }else {
         .self$POTlist <- ans
+        class(.self$POTlist) <- "extractPOT"
       }
       
     }

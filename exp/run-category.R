@@ -22,6 +22,7 @@ main <- function(args) {
   epsilon.2 <- exp.specs$epsilon.2
   CV.thresh <- exp.specs$CV
   nrun<-exp.specs$nrun
+  flag.sim <- exp.specs$flag.sim
   flag.process.query <- exp.specs$flag.process.query
 #   random_kways = c(4, 6)
 #   all_kways = c(2, 3)
@@ -96,6 +97,18 @@ main <- function(args) {
       , flag.debug = FALSE
       , flag.matlab = TRUE
     )
+    if (flag.sim){
+      data.sim <- curr.jtree$simulate(curr.data$DB.size)
+      data.sim <- data.sim[, colnames(curr.data$origin)]
+      data.sim.file <- paste(out.dir, data.file, "-eps2-", epsilon.2, "-sim.dat",sep="")
+      write.table(data.sim
+                  , data.sim.file
+                  , row.names = FALSE
+                  , col.names = FALSE
+                  , quote=FALSE
+                  , sep = ",")
+      
+    }
     
     
     #random query

@@ -13,6 +13,7 @@ load_depends <- function() {
   library(FNN)
   library(e1071)
   library(stringr)
+  library(caret)
   if(flag.install.junctiontreealgo){
     source("http://bioconductor.org/biocLite.R");
     biocLite(c("graph","RBGL","Rgraphviz"))
@@ -20,6 +21,7 @@ load_depends <- function() {
   library(gRain)
   library(Rgraphviz)
   library(gRim)
+  library(gRbase)
   options(message=0)
 }
 suppressMessages(load_depends())

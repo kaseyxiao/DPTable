@@ -18,7 +18,7 @@ Data <- setRefClass(
     
     sample_data = function(out.dir, rate, out.tag = '') {
       data.sample <- .self$origin[sample(.self$DB.size, round(.self$DB.size * rate)), ]
-      print(nrow(data.sample))
+      # print(nrow(data.sample))
       out.path <- file.path(out.dir, .self$name)
       out.name = paste(out.path, as.character(out.tag), sep = "")
       write.table(data.sample

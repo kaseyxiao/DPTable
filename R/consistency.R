@@ -64,7 +64,7 @@ ConsistentMargin <- setRefClass (
       if (ncol(uni) > 1) {
         attr.group.key <- uni[do.call(order, uni),]
         consist.order <- get_consistency_order(attr.group.key)
-        print(consist.order)
+        # print(consist.order)
         
         #Step 2: enforce mutual consistency
         for (i in seq_along(consist.order$seq)) {
