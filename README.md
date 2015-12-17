@@ -15,7 +15,7 @@ The packages listed above use the graph, RBGL and Rgraphviz packages. These pack
 ```sh
 >source("http://bioconductor.org/biocLite.R")
 >biocLite(c("graph","RBGL","Rgraphviz"))
-```sh
+```
 
 ####Instructions for running the program:
 In Rstudio, 
