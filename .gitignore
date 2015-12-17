@@ -45,6 +45,9 @@ Temporary Items
 
 # output directory
 /output/*
+/libsvm-3.20/*
+/objective_perturbation/*
+
 
 *.pdf
 *.html

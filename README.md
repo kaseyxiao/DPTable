@@ -10,7 +10,7 @@ Matlab & [cvx matlab software](http://cvxr.com/cvx/)
 MAKE SURE you have MATLAB installed, otherwise the script will keep waiting to connect matlab.
 
 To install R graphical modeling packages(gRain, gRim, gRbase),
-please see the instructions on the website: [http://people.math.aau.dk/~sorenh/software/gR/](http://people.math.aau.dk/~sorenh/software/gR/)
+please see the instructions on the website: [http://people.math.aau.dk/~sorenh/software/gR/](http://people.math.aau.dk/~sorenh/software/gR/).
 The packages listed above use the graph, RBGL and Rgraphviz packages. These packages are NOT on CRAN but on bioconductor. Please execute the following commands before installing these packages:
 ```sh
 >source("http://bioconductor.org/biocLite.R")
