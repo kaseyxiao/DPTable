@@ -50,4 +50,5 @@ then run
 
 The parameter `k` for k-way marginal can be reset inside the script by resetting variables as following:
 >random_kways = c(4, 6)
+
 >all_kways = c(2, 3)
